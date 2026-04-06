@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Blog Automator voor seoprofessor.nl
+Blog Automator voor funfit.nu
 Haalt trending SEO keywords op, genereert een blogpost met Claude,
 maakt een afbeelding met DALL-E, en plant de post in op WordPress.
 """
@@ -24,7 +24,7 @@ DATAFORSEO_LOGIN = os.getenv("DATAFORSEO_LOGIN")
 DATAFORSEO_PASSWORD = os.getenv("DATAFORSEO_PASSWORD")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-WP_URL = os.getenv("WP_URL", "https://seoprofessor.nl")
+WP_URL = os.getenv("WP_URL", "https://funfit.nu")
 WP_USER = os.getenv("WP_USER")
 WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
 LINKEDIN_ACCESS_TOKEN = os.getenv("LINKEDIN_ACCESS_TOKEN")
@@ -60,10 +60,21 @@ def fetch_trending_keywords():
     """Haal trending SEO-gerelateerde zoekwoorden op via DataForSEO."""
     log.info("📡 Stap 1: Trending keywords ophalen via DataForSEO...")
 
+    # Roteer tussen fitness-gerelateerde seed keywords
+    seed_keywords = [
+        "fitness", "hyrox", "personal training", "krachttraining",
+        "workout", "voeding sport", "afvallen sportschool",
+        "spieropbouw", "conditie opbouwen", "functioneel trainen",
+    ]
+    # Kies een seed keyword op basis van de week van het jaar
+    week_number = datetime.now(NL_TZ).isocalendar()[1]
+    seed = seed_keywords[week_number % len(seed_keywords)]
+    log.info(f"   🔑 Seed keyword: {seed}")
+
     url = "https://api.dataforseo.com/v3/dataforseo_labs/google/related_keywords/live"
     payload = [
         {
-            "keyword": "SEO",
+            "keyword": seed,
             "language_code": "nl",
             "location_code": 2528,  # Nederland
             "limit": 20,
@@ -113,27 +124,34 @@ def _build_blogpost_prompt(keywords):
 
     today = datetime.now(NL_TZ).strftime("%d %B %Y")
 
-    return f"""Je bent Stefan, een ervaren SEO-freelancer met 10+ jaar ervaring die schrijft voor seoprofessor.nl.
-Vandaag is het {today}. Schrijf een diepgaande, waardevolle Nederlandse blogpost van MINIMAAL 1200 woorden over een trending SEO-onderwerp.
+    return f"""Je schrijft voor funfit.nu, de website van FunFit — een sportschool in Lisse
+gericht op personal training, groepslessen, HYROX-training en een gezonde levensstijl.
+Vandaag is het {today}. Schrijf een diepgaande, waardevolle Nederlandse blogpost van MINIMAAL 1200 woorden.
 
-TRENDING KEYWORDS (kies het meest interessante onderwerp):
+TRENDING KEYWORDS (kies het meest interessante onderwerp voor een sportschool-publiek):
 {keyword_list}
 
+OVER FUNFIT:
+- Sportschool in Lisse met focus op personal training en groepslessen
+- Specialisatie in HYROX-training en functioneel trainen
+- Eigenaar: Mark van Marrewijk
+- Doelgroep: sporters van alle niveaus die resultaat willen boeken
+
 KWALITEITSEISEN:
-- Dit moet een artikel zijn waar een SEO-professional daadwerkelijk iets van leert
-- Geen oppervlakkige opsommingen — ga de diepte in met concrete voorbeelden, cijfers en praktijkcases
-- Onderbouw claims met specifieke data, percentages of bronvermeldingen (bijv. "Uit onderzoek van Ahrefs blijkt...")
-- Geef actionable tips die de lezer direct kan toepassen
-- Beschrijf stap-voor-stap processen waar relevant
+- Dit moet een artikel zijn waar sporters en fitnessliefhebbers daadwerkelijk iets van leren
+- Geen oppervlakkige opsommingen — ga de diepte in met concrete trainingsvoorbeelden en praktische tips
+- Onderbouw claims met sportwetenschap of trainingsdata waar mogelijk
+- Geef actionable tips die de lezer direct kan toepassen in de sportschool
+- Beschrijf oefeningen, schema's of voedingstips stap-voor-stap waar relevant
 - Benoem veelgemaakte fouten en hoe je ze voorkomt
-- Vergelijk tools, methodes of aanpakken waar dat relevant is
+- Maak het relevant voor zowel beginners als gevorderden
 
 SCHRIJFSTIJL:
 - Nederlandstalig, informeel maar professioneel (je/jij-vorm)
-- Schrijf vanuit het perspectief van een SEO-expert die dagelijks met klanten werkt
+- Schrijf vanuit het perspectief van een ervaren personal trainer / sportschool
 - Natuurlijke, menselijke schrijfstijl — geen AI-achtige zinnen of clichés
 - Varieer in zinslengte, gebruik af en toe spreektaal
-- Deel persoonlijke ervaringen: "Bij een klant van mij zag ik laatst...", "In mijn ervaring..."
+- Deel praktijkervaringen: "Wat we vaak zien bij onze leden...", "In de praktijk..."
 - Durf een mening te geven en stelling te nemen
 
 STRUCTUUR:
@@ -147,9 +165,9 @@ STRUCTUUR (geef dit EXACT terug in dit JSON-formaat):
   "title": "Pakkende H1 titel (max 60 tekens, bevat hoofdkeyword)",
   "meta_description": "SEO meta description (max 155 tekens, wekt nieuwsgierigheid)",
   "slug": "url-vriendelijke-slug",
-  "content": "De volledige HTML blogpost met <h2> subkoppen, <p> paragrafen, <ul>/<li> lijsten, eventueel <table> waar relevant. MINIMAAL 1200 woorden. Voeg ergens in de tekst deze link natuurlijk toe: <a href=\\"https://seoprofessor.nl/diensten\\">mijn SEO-diensten</a>. Gebruik GEEN <h1> tag (die komt van de titel).",
+  "content": "De volledige HTML blogpost met <h2> subkoppen, <p> paragrafen, <ul>/<li> lijsten, eventueel <table> waar relevant. MINIMAAL 1200 woorden. Voeg ergens in de tekst deze link natuurlijk toe: <a href=\\"https://funfit.nu/personal-training\\">personal training bij FunFit</a>. Gebruik GEEN <h1> tag (die komt van de titel).",
   "focus_keyword": "het hoofdkeyword van de post",
-  "dalle_prompt": "Een Engelse prompt voor DALL-E om een professionele, moderne blogheader afbeelding te genereren die past bij het onderwerp. Stijl: clean, minimalistisch, digitaal marketing thema. Geen tekst in de afbeelding."
+  "dalle_prompt": "Een Engelse prompt voor DALL-E om een professionele, energieke blogheader afbeelding te genereren die past bij het onderwerp. Stijl: modern fitness/sportschool thema, dynamisch, motiverend. Geen tekst in de afbeelding."
 }}
 
 BELANGRIJK: Het artikel moet MINIMAAL 1200 woorden bevatten. Lever kwaliteit, geen vulling.
@@ -164,6 +182,47 @@ def _parse_json_response(response_text):
     if text.endswith("```"):
         text = text.rsplit("```", 1)[0]
     return json.loads(text)
+
+
+import re
+
+
+def style_blog_content(html):
+    """Voeg !important inline styles toe zodat WordPress-thema kleuren niet overschrijft."""
+    FUNFIT_BLUE = "#0081a3"
+    BODY_COLOR = "#333333"
+
+    # Style headings met FunFit blauw
+    html = re.sub(
+        r"<(h[23])([^>]*)>",
+        rf'<\1\2 style="color: {FUNFIT_BLUE} !important; font-weight: 700 !important;">',
+        html,
+    )
+
+    # Style paragrafen, lijstitems en tabelcellen met donkergrijs
+    for tag in ("p", "li", "td", "th"):
+        html = re.sub(
+            rf"<({tag})([^>]*)>",
+            rf'<\1\2 style="color: {BODY_COLOR} !important;">',
+            html,
+        )
+
+    # Style links met FunFit blauw
+    html = re.sub(
+        r"<(a)([^>]*)>",
+        rf'<\1\2 style="color: {FUNFIT_BLUE} !important;">',
+        html,
+    )
+
+    # Wrap alles in een div met witte achtergrond
+    html = (
+        f'<div style="background-color: #ffffff !important; padding: 20px !important;'
+        f' border-radius: 8px !important;">'
+        f"{html}"
+        f"</div>"
+    )
+
+    return html
 
 
 def generate_blogpost(keywords):
@@ -204,6 +263,9 @@ def generate_blogpost(keywords):
     log.info(f"   📝 Focus keyword: {post_data['focus_keyword']}")
     word_count = len(post_data["content"].split())
     log.info(f"   📏 Woordentelling: ~{word_count} woorden")
+
+    # Pas inline styles toe zodat WordPress-thema kleuren niet overschrijft
+    post_data["content"] = style_blog_content(post_data["content"])
 
     return post_data
 
@@ -267,20 +329,16 @@ def upload_image_to_wp(image_bytes, filename="blog-header.png"):
     return media_id
 
 
-# ── Stap 4b: WordPress – Post inplannen ─────────────────────────────
-def create_wp_post(post_data, media_id, publish_date):
-    """Maak een ingeplande WordPress post aan."""
-    log.info("📝 Stap 4b: WordPress post aanmaken en inplannen...")
-
-    # WordPress verwacht ISO 8601 in site-lokale tijd
-    date_str = publish_date.strftime("%Y-%m-%dT%H:%M:%S")
+# ── Stap 4b: WordPress – Post publiceren ────────────────────────────
+def create_wp_post(post_data, media_id, publish_date=None):
+    """Maak een WordPress post aan en publiceer direct."""
+    log.info("📝 Stap 4b: WordPress post aanmaken en publiceren...")
 
     url = f"{WP_URL}/wp-json/wp/v2/posts"
     payload = {
         "title": post_data["title"],
         "content": post_data["content"],
-        "status": "future",
-        "date": date_str,
+        "status": "publish",
         "slug": post_data["slug"],
         "excerpt": post_data["meta_description"],
     }
@@ -309,20 +367,27 @@ def create_wp_post(post_data, media_id, publish_date):
 # ── Stap 5: LinkedIn – Post genereren en plaatsen ────────────────────
 def get_linkedin_member_id():
     """Haal LinkedIn member ID (sub) op via userinfo endpoint."""
+    log.info("   🔍 LinkedIn member ID ophalen via userinfo...")
     response = requests.get(
         "https://api.linkedin.com/v2/userinfo",
         headers={"Authorization": f"Bearer {LINKEDIN_ACCESS_TOKEN}"},
         timeout=15,
     )
-    response.raise_for_status()
-    return response.json()["sub"]
+    log.info(f"   🔍 Userinfo status: {response.status_code}")
+    if response.status_code != 200:
+        log.error(f"   ❌ Userinfo response headers: {dict(response.headers)}")
+        log.error(f"   ❌ Userinfo response body: {response.text}")
+        response.raise_for_status()
+    data = response.json()
+    log.info(f"   🔍 Userinfo keys: {list(data.keys())}")
+    return data["sub"]
 
 
 def generate_linkedin_post(post_data):
     """Genereer een LinkedIn post via Claude."""
     log.info("💬 Stap 5a: LinkedIn post genereren met Claude...")
 
-    blog_url = f"https://seoprofessor.nl/{post_data['slug']}/"
+    blog_url = f"https://funfit.nu/{post_data['slug']}/"
 
     prompt = f"""Schrijf een pakkende LinkedIn post in het Nederlands.
 
@@ -331,13 +396,17 @@ BLOGPOST INFO:
 - Onderwerp: {post_data['focus_keyword']}
 - URL: {blog_url}
 
+JE SCHRIJFT ALS:
+Mark van Marrewijk, eigenaar van FunFit — een sportschool in Lisse
+gespecialiseerd in personal training, groepslessen en HYROX-training.
+
 VEREISTEN:
 - Max 1300 tekens (inclusief hashtags)
 - Nederlandstalig
-- Professioneel maar persoonlijk — schrijf als een SEO-freelancer die zijn kennis deelt
+- Professioneel maar persoonlijk — schrijf als een sportschool-eigenaar en trainer die zijn kennis deelt
 - Begin met een pakkende opening (hook) die aandacht trekt
 - Vermeld de blogtitel en link naar het artikel
-- Eindig met 3-5 relevante hashtags zoals #SEO #DigitalMarketing #SEOtips
+- Eindig met 3-5 relevante hashtags zoals #Fitness #PersonalTraining #HYROX #FunFit #Sportschool
 - Gebruik witregels voor leesbaarheid
 - Geen emoji-overload, max 3-4 emoji's
 - Natuurlijke schrijfstijl, geen AI-achtige zinnen
@@ -375,6 +444,9 @@ def post_to_linkedin(text):
         "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
     }
 
+    log.info(f"   🔍 Payload: {json.dumps(payload, indent=2)}")
+    log.info(f"   🔍 Token (eerste 10 chars): {LINKEDIN_ACCESS_TOKEN[:10]}...")
+
     response = requests.post(
         "https://api.linkedin.com/v2/ugcPosts",
         json=payload,
@@ -384,9 +456,16 @@ def post_to_linkedin(text):
         },
         timeout=30,
     )
-    response.raise_for_status()
-    result = response.json()
 
+    log.info(f"   🔍 Response status: {response.status_code}")
+    log.info(f"   🔍 Response headers: {dict(response.headers)}")
+    log.info(f"   🔍 Response body: {response.text}")
+
+    if response.status_code not in (200, 201):
+        log.error(f"   ❌ LinkedIn API fout ({response.status_code}): {response.text}")
+        response.raise_for_status()
+
+    result = response.json()
     post_id = result.get("id", "onbekend")
     log.info(f"   ✅ LinkedIn post geplaatst (ID: {post_id})")
     return result
@@ -476,7 +555,7 @@ def test_linkedin():
 # ── Main ─────────────────────────────────────────────────────────────
 def main():
     log.info("=" * 60)
-    log.info("🚀 Blog Automator voor seoprofessor.nl gestart")
+    log.info("🚀 Blog Automator voor funfit.nu gestart")
     log.info("=" * 60)
 
     # Controleer environment variables
@@ -512,13 +591,13 @@ def main():
                 slug = arg.split("=", 1)[1]
 
         if not title or not slug:
-            log.info("   Laatste ingeplande post ophalen van WordPress...")
-            url = f"{WP_URL}/wp-json/wp/v2/posts?status=future&per_page=1&orderby=date&order=desc"
+            log.info("   Laatste gepubliceerde post ophalen van WordPress...")
+            url = f"{WP_URL}/wp-json/wp/v2/posts?status=publish&per_page=1&orderby=date&order=desc"
             r = requests.get(url, auth=(WP_USER, WP_APP_PASSWORD), timeout=15)
             r.raise_for_status()
             posts = r.json()
             if not posts:
-                log.error("❌ Geen ingeplande posts gevonden")
+                log.error("❌ Geen gepubliceerde posts gevonden")
                 sys.exit(1)
             wp = posts[0]
             title = wp["title"]["rendered"]
@@ -528,7 +607,7 @@ def main():
         post_data = {
             "title": title,
             "slug": slug,
-            "focus_keyword": "SEO",
+            "focus_keyword": "fitness",
         }
         try:
             linkedin_text = generate_linkedin_post(post_data)
@@ -556,16 +635,10 @@ def main():
             log.warning(f"   ⚠️  Afbeelding overgeslagen: {img_err}")
             log.info("   ➡️  Post wordt zonder featured image gepubliceerd")
 
-        # Stap 4: Post inplannen
-        publish_date = next_friday_9am()
-        wp_post = create_wp_post(post_data, media_id, publish_date)
+        # Stap 4: Post publiceren
+        wp_post = create_wp_post(post_data, media_id)
 
-        # Stap 5: LinkedIn post
-        try:
-            linkedin_text = generate_linkedin_post(post_data)
-            li_result = post_to_linkedin(linkedin_text)
-        except Exception as li_err:
-            log.warning(f"   ⚠️  LinkedIn overgeslagen: {li_err}")
+        # LinkedIn wordt apart gepost via --linkedin-only op de publish-datum
 
         # Samenvatting
         log.info("")
@@ -573,7 +646,7 @@ def main():
         log.info("✅ KLAAR!")
         log.info(f"   Titel:      {post_data['title']}")
         log.info(f"   Keyword:    {post_data['focus_keyword']}")
-        log.info(f"   Gepland:    {publish_date.strftime('%A %d %B %Y om %H:%M')} (NL-tijd)")
+        log.info(f"   Status:     Gepubliceerd")
         log.info(f"   Post ID:    {wp_post['id']}")
         log.info(f"   Link:       {wp_post.get('link', 'N/A')}")
         log.info("=" * 60)
