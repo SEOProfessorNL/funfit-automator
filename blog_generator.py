@@ -236,7 +236,7 @@ STRUCTUUR (geef dit EXACT terug in dit JSON-formaat):
   "title": "Pakkende H1 titel (max 60 tekens, bevat hoofdkeyword)",
   "meta_description": "SEO meta description (max 155 tekens, wekt nieuwsgierigheid)",
   "slug": "url-vriendelijke-slug",
-  "content": "De volledige HTML blogpost met <h2> subkoppen, <p> paragrafen, <ul>/<li> lijsten, eventueel <table> waar relevant. MINIMAAL 1200 woorden. Voeg ergens in de tekst deze link natuurlijk toe: <a href=\\"https://funfit.nu/personal-training\\">personal training bij FunFit</a>. Gebruik GEEN <h1> tag (die komt van de titel).",
+  "content": "De volledige HTML blogpost met <h2> subkoppen, <p> paragrafen, <ul>/<li> lijsten, eventueel <table> waar relevant. MINIMAAL 1200 woorden. Voeg ergens in de tekst deze link natuurlijk toe: <a href=\\"https://funfit.nu/personal-training\\">personal training bij FunFit</a>. Gebruik GEEN <h1> tag (die komt van de titel). Gebruik GEEN inline styles of style attributen — de styling wordt automatisch toegepast door het theme. Lever schone, semantische HTML.",
   "focus_keyword": "het hoofdkeyword van de post",
   "dalle_prompt": "Een Engelse prompt voor DALL-E om een professionele, energieke blogheader afbeelding te genereren die past bij het onderwerp. Stijl: modern fitness/sportschool thema, dynamisch, motiverend. Geen tekst in de afbeelding."
 }}
@@ -259,41 +259,246 @@ import re
 
 
 def style_blog_content(html):
-    """Voeg !important inline styles toe zodat WordPress-thema kleuren niet overschrijft."""
-    FUNFIT_BLUE = "#0081a3"
-    BODY_COLOR = "#333333"
+    """Wrap blogpost in het FunFit dark design met nav, styled content en footer."""
 
-    # Style headings met FunFit blauw
-    html = re.sub(
-        r"<(h[23])([^>]*)>",
-        rf'<\1\2 style="color: {FUNFIT_BLUE} !important; font-weight: 700 !important;">',
-        html,
+    WRAPPER_CSS = (
+        '<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900'
+        '&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet"><style>'
+        "body.single-post #page > #masthead,body.single-post .site-header,body.single-post .qodef-page-header,"
+        "body.single-post .qodef-mobile-header,body.single-post #colophon,body.single-post .site-footer,"
+        "body.single-post .qodef-page-footer,body.single-post .qodef-footer-top-holder,"
+        "body.single-post .qodef-footer-bottom-holder,body.single-post .qodef-title-holder,"
+        "body.single-post .qodef-title,body.single-post .entry-header,body.single-post .page-header,"
+        "body.single-post .qodef-back-to-top,body.single-post .breadcrumbs,body.single-post .breadcrumb,"
+        "body.single-post .page-title-wrap,body.single-post .page-title-bar,"
+        "body.single-post .qodef-blog-holder .qodef-blog-list,body.single-post .qodef-comment-holder,"
+        "body.single-post .qodef-related-posts-holder,body.single-post .qodef-blog-single-navigation,"
+        "body.single-post .qodef-sidebar,body.single-post aside"
+        "{display:none!important;visibility:hidden!important;height:0!important;max-height:0!important;"
+        "overflow:hidden!important;opacity:0!important;pointer-events:none!important;"
+        "position:absolute!important;clip:rect(0,0,0,0)!important}"
+        "\n/* Post title & meta — dark theme */\n"
+        "body.single-post .entry-title.qodef-post-title{color:#fff!important;font-family:'Barlow Condensed',sans-serif!important;"
+        "font-weight:800!important;font-size:clamp(2rem,5vw,3.2rem)!important;line-height:1.1!important;"
+        "letter-spacing:.5px!important;margin:0 0 20px!important;max-width:800px!important;padding:0 24px!important;"
+        "margin-left:auto!important;margin-right:auto!important}"
+        "body.single-post .qodef-post-info-top{max-width:800px!important;margin:0 auto 32px!important;"
+        "padding:0 24px!important;display:flex!important;align-items:center!important;gap:16px!important;flex-wrap:wrap!important}"
+        "body.single-post .qodef-post-info-author{display:inline-flex!important;align-items:center!important;gap:6px!important}"
+        "body.single-post .qodef-post-info-author-image{display:none!important}"
+        "body.single-post .qodef-post-info-author a,body.single-post .qodef-post-info-author span,"
+        "body.single-post .qodef-post-info-author-text{color:#9a9a9a!important;"
+        "font-family:'Barlow Condensed',sans-serif!important;font-weight:600!important;"
+        "text-transform:uppercase!important;letter-spacing:1.5px!important;font-size:.85rem!important}"
+        "body.single-post .qodef-post-info-author a:hover{color:#baca28!important}"
+        "body.single-post .qodef-post-info-date,body.single-post .qodef-post-info-date a{color:#baca28!important;"
+        "font-family:'Barlow Condensed',sans-serif!important;font-weight:700!important;"
+        "text-transform:uppercase!important;letter-spacing:2px!important;font-size:.85rem!important}"
+        "body.single-post .qodef-post-info-category,body.single-post .qodef-post-info-comments,"
+        "body.single-post .qodef-post-info-comments-holder,body.single-post .qodef-post-info-bottom{display:none!important}"
+        "body.single-post .saboxplugin-wrap{max-width:800px!important;margin:0 auto 40px!important;padding:24px!important;"
+        "background:#111!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:14px!important}"
+        "body.single-post .saboxplugin-wrap .saboxplugin-socials{background:transparent!important;"
+        "border-top:1px solid rgba(255,255,255,.08)!important}"
+        "body.single-post .saboxplugin-authorname a{color:#baca28!important;"
+        "font-family:'Barlow Condensed',sans-serif!important;font-weight:700!important;"
+        "text-transform:uppercase!important;letter-spacing:1px!important}"
+        "body.single-post .saboxplugin-desc,body.single-post .saboxplugin-desc p{color:#e6e6e6!important}"
+        "body.single-post .saboxplugin-gravatar img{border-radius:50%!important}"
+        "\nhtml,body{padding:0!important;margin:0!important;background:#0A0A0A!important}"
+        ".qodef-wrapper,.qodef-wrapper-inner,.qodef-content,.qodef-content-inner,.qodef-container,"
+        ".qodef-container-inner,.qodef-page-content-holder,.qodef-full-width,.qodef-grid-col-12,"
+        ".qodef-grid-col-8,.qodef-grid,.site-content,.entry-content,.content-area,#primary,#content,"
+        ".page-content,.site-main,main,.wrapper,.container-fluid{padding:0!important;margin:0!important;"
+        "max-width:100%!important;width:100%!important;background:transparent!important;float:none!important}"
+        ".ff-root,.ff-root *{box-sizing:border-box}"
+        ":root{--green:#baca28;--blue:#0081a3;--dark:#0A0A0A;--white:#FFFFFF;--gray-900:#111111;"
+        "--gray-400:#9a9a9a;--gray-200:#e6e6e6;--radius:14px;--container:1240px;"
+        "--shadow:0 20px 60px rgba(0,0,0,.35);--transition:all .25s ease}"
+        "*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}"
+        "body{font-family:'Barlow',system-ui,sans-serif;background:var(--dark);color:var(--white);"
+        "line-height:1.65;font-size:17px;overflow-x:hidden;-webkit-font-smoothing:antialiased}"
+        "h1,h2,h3,h4{font-family:'Barlow Condensed',sans-serif;font-weight:800;line-height:1.15;letter-spacing:.5px}"
+        "p{max-width:75ch}a{color:inherit;text-decoration:none}img{max-width:100%;display:block}"
+        ".container{max-width:var(--container);margin:0 auto;padding:0 24px}"
+        ".brand-fun{color:var(--blue)}.brand-fit{color:var(--green)}"
+        ".ff-overlay-nav{position:fixed;top:0;left:0;right:0;z-index:9999;background:transparent;"
+        "transition:background .3s ease,backdrop-filter .3s ease}"
+        ".ff-overlay-nav.scrolled{background:rgba(13,26,15,.92);backdrop-filter:blur(14px);box-shadow:0 4px 24px rgba(0,0,0,.35)}"
+        ".ff-nav-inner{max-width:var(--container);margin:0 auto;padding:18px 24px;display:flex;"
+        "align-items:center;justify-content:space-between;gap:24px}"
+        ".ff-nav-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.7rem;"
+        "text-transform:uppercase;letter-spacing:1px;color:#fff;white-space:nowrap}"
+        ".ff-nav-links{list-style:none;display:flex;align-items:center;gap:30px;margin:0;padding:0}"
+        ".ff-nav-links>li{position:relative}"
+        ".ff-nav-links a{color:#fff!important;text-decoration:none;font-family:'Barlow Condensed',sans-serif;"
+        "font-weight:700;text-transform:uppercase;letter-spacing:1.2px;font-size:.95rem;padding:10px 0;"
+        "display:inline-block;transition:color .2s}.ff-nav-links a:hover{color:#c8e63c!important}"
+        ".ff-nav-links .ff-submenu{position:absolute;top:100%;left:0;min-width:230px;"
+        "background:rgba(13,26,15,.96);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.08);"
+        "border-radius:10px;padding:10px 0;margin:0;list-style:none;opacity:0;visibility:hidden;"
+        "transform:translateY(8px);transition:all .2s ease;box-shadow:0 20px 50px rgba(0,0,0,.45)}"
+        ".ff-nav-links>li:hover>.ff-submenu{opacity:1;visibility:visible;transform:translateY(0)}"
+        ".ff-submenu li{display:block}.ff-submenu a{display:block;padding:10px 20px;font-size:.9rem;"
+        "letter-spacing:1px;white-space:nowrap}.ff-submenu a:hover{background:rgba(200,230,60,.08)}"
+        ".ff-nav-toggle{display:none;background:transparent;border:none;width:44px;height:44px;cursor:pointer;padding:0;color:#fff}"
+        ".ff-nav-toggle span{display:block;width:26px;height:2px;background:#fff;margin:5px auto;"
+        "transition:all .25s ease;border-radius:2px}"
+        "@media(max-width:960px){.ff-nav-toggle{display:block}.ff-nav-links{display:none}}"
+        "@media(max-width:768px){.ff-overlay-nav.is-open{position:fixed!important;top:0!important;"
+        "left:0!important;right:0!important;width:100%!important;height:100vh!important;"
+        "background:#0d1a0f!important;z-index:99999!important;overflow-y:auto!important}"
+        ".ff-overlay-nav.is-open .ff-nav-inner{flex-direction:column;align-items:stretch;padding:20px 0 40px}"
+        ".ff-overlay-nav.is-open .ff-nav-logo,.ff-overlay-nav.is-open .ff-nav-toggle{position:absolute;top:18px}"
+        ".ff-overlay-nav.is-open .ff-nav-logo{left:24px}.ff-overlay-nav.is-open .ff-nav-toggle{right:24px}"
+        ".ff-overlay-nav.is-open .ff-nav-links{display:flex!important;flex-direction:column;gap:0;"
+        "padding:70px 0 20px;margin:0;list-style:none;width:100%}"
+        ".ff-overlay-nav.is-open .ff-nav-links>li{display:block!important;width:100%;"
+        "border-bottom:1px solid rgba(255,255,255,.08)}"
+        ".ff-overlay-nav.is-open .ff-nav-links a{display:block!important;padding:16px 24px!important;"
+        "font-size:18px!important;width:100%}"
+        ".ff-overlay-nav.is-open .ff-submenu{position:static!important;opacity:1!important;"
+        "visibility:visible!important;transform:none!important;background:rgba(255,255,255,.03)!important;"
+        "border:none!important;box-shadow:none!important;padding:0!important;margin:0!important;list-style:none}"
+        ".ff-overlay-nav.is-open .ff-submenu a{padding:12px 24px 12px 40px!important;font-size:15px!important}}"
+        "\n.ff-article{max-width:800px;margin:0 auto;padding:40px 24px 80px}"
+        ".ff-article h2{color:var(--green);font-size:clamp(1.5rem,3vw,2rem);margin:48px 0 16px}"
+        ".ff-article h3{color:var(--blue);font-size:clamp(1.2rem,2vw,1.5rem);margin:36px 0 12px}"
+        ".ff-article p{color:var(--gray-200);margin:0 0 18px;font-size:1.05rem;line-height:1.75}"
+        ".ff-article ul,.ff-article ol{color:var(--gray-200);margin:0 0 24px 20px;font-size:1.05rem;line-height:1.75}"
+        ".ff-article li{margin-bottom:8px}"
+        ".ff-article a{color:var(--green);border-bottom:1px solid rgba(186,202,40,.3);transition:border-color .2s}"
+        ".ff-article a:hover{border-color:var(--green)}"
+        ".ff-article strong{color:var(--white)}"
+        ".ff-article table{width:100%;border-collapse:collapse;margin:24px 0}"
+        ".ff-article th{background:var(--gray-900);color:var(--green);padding:12px 16px;text-align:left;"
+        "font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;"
+        "letter-spacing:1px;font-size:.9rem;border-bottom:2px solid var(--green)}"
+        ".ff-article td{padding:12px 16px;color:var(--gray-200);border-bottom:1px solid rgba(255,255,255,.06)}"
+        ".ff-article img{border-radius:var(--radius);margin:24px 0;box-shadow:var(--shadow)}"
+        ".ff-article blockquote{border-left:4px solid var(--green);padding:16px 24px;margin:24px 0;"
+        "background:rgba(186,202,40,.05);border-radius:0 var(--radius) var(--radius) 0}"
+        ".ff-post-cta{background:linear-gradient(135deg,var(--green) 0%,#d4e33a 100%);color:var(--dark);"
+        "text-align:center;padding:80px 24px}"
+        ".ff-post-cta h2{color:var(--dark)!important;margin-bottom:20px;text-transform:uppercase;"
+        "font-family:'Barlow Condensed',sans-serif;font-weight:800}"
+        ".ff-post-cta p{color:rgba(10,10,10,.8);margin:0 auto 36px;font-size:1.2rem}"
+        ".ff-post-cta .btn{display:inline-flex;align-items:center;gap:10px;padding:18px 32px;border-radius:12px;"
+        "font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;"
+        "font-size:1.05rem;background:var(--dark);color:var(--white);border:2px solid var(--dark);transition:all .25s ease}"
+        ".ff-post-cta .btn:hover{background:transparent;color:var(--dark)}"
+        ".footer{background:var(--dark);padding:60px 0 40px;border-top:1px solid rgba(255,255,255,.06);text-align:center}"
+        ".footer__logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.8rem;"
+        "text-transform:uppercase;margin-bottom:12px}"
+        ".footer p{margin:0 auto;color:var(--gray-400);font-size:.95rem}"
+        ".footer__links{list-style:none;display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin:20px 0;padding:0}"
+        ".footer__links a{color:var(--gray-400);font-family:'Barlow Condensed',sans-serif;font-weight:600;"
+        "text-transform:uppercase;letter-spacing:1px;font-size:.85rem;transition:color .2s}"
+        ".footer__links a:hover{color:var(--green)}"
+        ":focus-visible{outline:3px solid var(--green);outline-offset:3px;border-radius:6px}"
+        "</style>"
     )
 
-    # Style paragrafen, lijstitems en tabelcellen met donkergrijs
-    for tag in ("p", "li", "td", "th"):
-        html = re.sub(
-            rf"<({tag})([^>]*)>",
-            rf'<\1\2 style="color: {BODY_COLOR} !important;">',
-            html,
-        )
-
-    # Style links met FunFit blauw
-    html = re.sub(
-        r"<(a)([^>]*)>",
-        rf'<\1\2 style="color: {FUNFIT_BLUE} !important;">',
-        html,
+    NAV = (
+        '<nav class="ff-overlay-nav" id="ffOverlayNav" aria-label="Hoofdnavigatie"><div class="ff-nav-inner">'
+        '<a href="https://funfit.nu/" class="ff-nav-logo"><span class="brand-fun">FUN</span>'
+        '<span class="brand-fit">FIT</span> LISSE</a>'
+        '<button class="ff-nav-toggle" id="ffNavToggle" aria-expanded="false" aria-label="Menu openen">'
+        '<span></span><span></span><span></span></button>'
+        '<ul class="ff-nav-links" id="ffNavLinks">'
+        '<li><a href="https://funfit.nu/">Home</a></li>'
+        '<li class="has-submenu"><a href="https://funfit.nu/personal-training/">Personal Training</a>'
+        '<ul class="ff-submenu"><li><a href="https://funfit.nu/bootcamp-lisse/">Bootcamp</a></li>'
+        '<li><a href="https://funfit.nu/small-group-training/">Small Group Training</a></li></ul></li>'
+        '<li><a href="https://funfit.nu/hyrox-lisse/">Hyrox</a></li>'
+        '<li class="has-submenu"><a href="https://funfit.nu/sportschool-lisse/">Sportschool</a>'
+        '<ul class="ff-submenu"><li><a href="https://funfit.nu/sportschool-hillegom/">Hillegom</a></li>'
+        '<li><a href="https://funfit.nu/sportschool-sassenheim/">Sassenheim</a></li>'
+        '<li><a href="https://funfit.nu/sportschool-noordwijkerhout/">Noordwijkerhout</a></li>'
+        '<li><a href="https://funfit.nu/sportschool-voorhout/">Voorhout</a></li>'
+        '<li><a href="https://funfit.nu/sportschool-noordwijk/">Noordwijk</a></li></ul></li>'
+        '<li><a href="https://funfit.nu/inschrijven/">Inschrijven</a></li>'
+        '<li><a href="https://funfit.nu/contact/">Contact</a></li></ul>'
+        '</div></nav>'
     )
 
-    # Wrap alles in een div met witte achtergrond
-    html = (
-        f'<div style="background-color: #ffffff !important; padding: 20px !important;'
-        f' border-radius: 8px !important;">'
-        f"{html}"
-        f"</div>"
+    CTA = (
+        '<div class="ff-post-cta">'
+        '<h2>Ook Trainen Bij FunFit?</h2>'
+        '<p>Kom langs voor een gratis kennismakingsgesprek. Onze trainers laten je graag zien wat we te bieden hebben.</p>'
+        '<a href="https://funfit.nu/inschrijven/" class="btn">Schrijf Je In &rarr;</a>'
+        '</div>'
     )
 
-    return html
+    FOOTER = (
+        '<footer class="footer"><div class="container">'
+        '<div class="footer__logo"><span class="brand-fun">FUN</span><span class="brand-fit">FIT</span> LISSE</div>'
+        '<p style="color:var(--green);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;font-size:.85rem;'
+        'text-transform:uppercase;letter-spacing:2px;margin:8px auto 24px">'
+        '&#9733; Enige Hyrox Approved Gym In De Bollenstreek</p>'
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:40px;max-width:900px;margin:0 auto 40px;text-align:left">'
+        '<div><p style="color:var(--green);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;font-size:.8rem;'
+        'text-transform:uppercase;letter-spacing:2px;margin-bottom:12px">Training</p>'
+        '<ul style="list-style:none;padding:0;margin:0">'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/personal-training/" style="color:var(--gray-400);font-size:.9rem">Personal Training</a></li>'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/hyrox-lisse/" style="color:var(--gray-400);font-size:.9rem">Hyrox Training</a></li>'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/bootcamp-lisse/" style="color:var(--gray-400);font-size:.9rem">Bootcamp</a></li>'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/small-group-training/" style="color:var(--gray-400);font-size:.9rem">Small Group Training</a></li></ul></div>'
+        '<div><p style="color:var(--green);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;font-size:.8rem;'
+        'text-transform:uppercase;letter-spacing:2px;margin-bottom:12px">Locaties</p>'
+        '<ul style="list-style:none;padding:0;margin:0">'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/sportschool-hillegom/" style="color:var(--gray-400);font-size:.9rem">Hillegom</a></li>'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/sportschool-sassenheim/" style="color:var(--gray-400);font-size:.9rem">Sassenheim</a></li>'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/sportschool-noordwijkerhout/" style="color:var(--gray-400);font-size:.9rem">Noordwijkerhout</a></li>'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/sportschool-voorhout/" style="color:var(--gray-400);font-size:.9rem">Voorhout</a></li>'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/sportschool-noordwijk/" style="color:var(--gray-400);font-size:.9rem">Noordwijk</a></li></ul></div>'
+        '<div><p style="color:var(--green);font-family:\'Barlow Condensed\',sans-serif;font-weight:700;font-size:.8rem;'
+        'text-transform:uppercase;letter-spacing:2px;margin-bottom:12px">Info</p>'
+        '<ul style="list-style:none;padding:0;margin:0">'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/over-funfit/" style="color:var(--gray-400);font-size:.9rem">Over FunFit</a></li>'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/blog/" style="color:var(--gray-400);font-size:.9rem">Blog</a></li>'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/inschrijven/" style="color:var(--gray-400);font-size:.9rem">Inschrijven</a></li>'
+        '<li style="padding:4px 0"><a href="https://funfit.nu/contact/" style="color:var(--gray-400);font-size:.9rem">Contact</a></li>'
+        '<li style="padding:4px 0"><a href="tel:+31623224068" style="color:var(--gray-400);font-size:.9rem">06 23224068</a></li></ul></div>'
+        '</div>'
+        '<div style="border-top:1px solid rgba(255,255,255,.06);padding-top:24px">'
+        '<p>Spekkelaan 1, 2161 GH Lisse &middot; '
+        '<a href="https://www.facebook.com/FunFit.nu" style="color:var(--gray-400)">Facebook</a> &middot; '
+        '<a href="https://www.instagram.com/funfitlisse/" style="color:var(--gray-400)">Instagram</a></p>'
+        '<p style="margin-top:12px;font-size:.85rem">&copy; 2026 FunFit Lisse. Alle rechten voorbehouden.</p>'
+        '</div></div></footer>'
+    )
+
+    JS = (
+        "<script>(function(){var nav=document.getElementById('ffOverlayNav'),"
+        "toggle=document.getElementById('ffNavToggle');"
+        "if(toggle&&nav){toggle.addEventListener('click',function(){"
+        "var open=nav.classList.toggle('is-open');"
+        "toggle.setAttribute('aria-expanded',open?'true':'false');"
+        "document.body.style.overflow=open?'hidden':''});"
+        "nav.querySelectorAll('.ff-nav-links a').forEach(function(a){"
+        "a.addEventListener('click',function(){if(nav.classList.contains('is-open')){"
+        "nav.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');"
+        "document.body.style.overflow=''}})})}"
+        "var onScroll=function(){if(!nav)return;if(window.scrollY>40)"
+        "nav.classList.add('scrolled');else nav.classList.remove('scrolled')};"
+        "window.addEventListener('scroll',onScroll,{passive:true});onScroll()})();</script>"
+    )
+
+    return (
+        f"{WRAPPER_CSS}\n"
+        f'<div class="ff-root">\n'
+        f"{NAV}\n"
+        f'<div style="padding-top:100px;background:var(--dark)">\n'
+        f'<div class="ff-article">\n'
+        f"{html}\n"
+        f"</div>\n"
+        f"</div>\n"
+        f"{CTA}\n"
+        f"{FOOTER}\n"
+        f"</div>\n"
+        f"{JS}"
+    )
 
 
 def generate_blogpost(keywords, queued_topic=None):
