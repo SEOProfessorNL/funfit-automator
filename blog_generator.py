@@ -30,6 +30,7 @@ WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
 LINKEDIN_ACCESS_TOKEN = os.getenv("LINKEDIN_ACCESS_TOKEN")
 
 NL_TZ = ZoneInfo("Europe/Amsterdam")
+TOPIC_QUEUE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "topic_queue.json")
 
 # ── Logging ──────────────────────────────────────────────────────────
 os.makedirs("logs", exist_ok=True)
@@ -53,6 +54,63 @@ def next_friday_9am():
         days_ahead = 7
     target = now.replace(hour=9, minute=0, second=0, microsecond=0) + timedelta(days=days_ahead)
     return target
+
+
+# ── Stap 0: Topic Queue – Check geplande onderwerpen ─────────────────
+def pop_queued_topic():
+    """Haal het eerste onderwerp uit topic_queue.json en verwijder het.
+    Returns None als de queue leeg is of niet bestaat."""
+    if not os.path.exists(TOPIC_QUEUE_FILE):
+        log.info("   📋 Geen topic_queue.json gevonden, skip.")
+        return None
+
+    try:
+        with open(TOPIC_QUEUE_FILE, "r", encoding="utf-8") as f:
+            queue = json.load(f)
+    except (json.JSONDecodeError, IOError) as e:
+        log.warning(f"   ⚠️  Kon topic_queue.json niet lezen: {e}")
+        return None
+
+    if not queue:
+        log.info("   📋 Topic queue is leeg, val terug op trending keywords.")
+        return None
+
+    # Pak het eerste item
+    topic = queue.pop(0)
+    log.info(f"   📋 Queued topic gevonden: \"{topic.get('title_hint', '?')}\"")
+
+    # Schrijf de resterende queue terug
+    with open(TOPIC_QUEUE_FILE, "w", encoding="utf-8") as f:
+        json.dump(queue, f, indent=2, ensure_ascii=False)
+    log.info(f"   📋 {len(queue)} topics resterend in queue.")
+
+    return topic
+
+
+def commit_queue_update():
+    """Commit en push de bijgewerkte topic_queue.json naar GitHub."""
+    import subprocess
+    repo_dir = os.path.dirname(os.path.abspath(__file__))
+    try:
+        subprocess.run(["git", "-C", repo_dir, "add", "topic_queue.json"], check=True, capture_output=True)
+        result = subprocess.run(
+            ["git", "-C", repo_dir, "diff", "--cached", "--quiet"],
+            capture_output=True
+        )
+        if result.returncode != 0:  # Er zijn staged changes
+            subprocess.run(
+                ["git", "-C", repo_dir, "commit", "-m", "chore: pop topic from queue"],
+                check=True, capture_output=True
+            )
+            subprocess.run(
+                ["git", "-C", repo_dir, "push"],
+                check=True, capture_output=True
+            )
+            log.info("   📋 topic_queue.json gecommit en gepusht naar GitHub.")
+        else:
+            log.info("   📋 Geen wijzigingen in topic_queue.json om te committen.")
+    except subprocess.CalledProcessError as e:
+        log.warning(f"   ⚠️  Kon topic_queue.json niet committen: {e}")
 
 
 # ── Stap 1: DataForSEO – Trending keywords ──────────────────────────
@@ -118,17 +176,30 @@ def fetch_trending_keywords():
 
 
 # ── Stap 2: Claude – Blogpost genereren ─────────────────────────────
-def _build_blogpost_prompt(keywords):
+def _build_blogpost_prompt(keywords, queued_topic=None):
     """Bouw de prompt voor blogpost-generatie."""
     keyword_list = ", ".join(kw["keyword"] for kw in keywords[:5])
 
     today = datetime.now(NL_TZ).strftime("%d %B %Y")
 
+    # Als er een queued topic is, voeg specifieke instructies toe
+    topic_instruction = ""
+    if queued_topic:
+        topic_instruction = f"""
+SPECIFIEK ONDERWERP (heeft prioriteit boven trending keywords):
+- Titel richting: {queued_topic.get('title_hint', '')}
+- Focus keyword: {queued_topic.get('focus_keyword', '')}
+- Gerelateerde keywords: {', '.join(queued_topic.get('seed_keywords', []))}
+- Instructies: {queued_topic.get('notes', '')}
+
+Schrijf het artikel over dit specifieke onderwerp. Gebruik de trending keywords hieronder alleen als inspiratie voor extra context of als je ze natuurlijk kunt verwerken.
+"""
+
     return f"""Je schrijft voor funfit.nu, de website van FunFit — een sportschool in Lisse
 gericht op personal training, groepslessen, HYROX-training en een gezonde levensstijl.
 Vandaag is het {today}. Schrijf een diepgaande, waardevolle Nederlandse blogpost van MINIMAAL 1200 woorden.
 
-TRENDING KEYWORDS (kies het meest interessante onderwerp voor een sportschool-publiek):
+{topic_instruction}TRENDING KEYWORDS (kies het meest interessante onderwerp voor een sportschool-publiek):
 {keyword_list}
 
 OVER FUNFIT:
@@ -225,11 +296,11 @@ def style_blog_content(html):
     return html
 
 
-def generate_blogpost(keywords):
+def generate_blogpost(keywords, queued_topic=None):
     """Genereer een Nederlandse blogpost. Probeert eerst Claude, fallback naar GPT-4o."""
     log.info("✍️  Stap 2: Blogpost genereren...")
 
-    prompt = _build_blogpost_prompt(keywords)
+    prompt = _build_blogpost_prompt(keywords, queued_topic=queued_topic)
 
     # Probeer Claude eerst
     try:
@@ -619,11 +690,15 @@ def main():
         return
 
     try:
+        # Stap 0: Check topic queue
+        log.info("📋 Stap 0: Topic queue checken...")
+        queued_topic = pop_queued_topic()
+
         # Stap 1: Keywords ophalen
         keywords = fetch_trending_keywords()
 
-        # Stap 2: Blogpost genereren
-        post_data = generate_blogpost(keywords)
+        # Stap 2: Blogpost genereren (met queued topic als die er is)
+        post_data = generate_blogpost(keywords, queued_topic=queued_topic)
 
         # Stap 3: Afbeelding genereren (optioneel)
         slug = post_data.get("slug", "blog-header")
@@ -639,6 +714,10 @@ def main():
         wp_post = create_wp_post(post_data, media_id)
 
         # LinkedIn wordt apart gepost via --linkedin-only op de publish-datum
+
+        # Commit queue update als er een queued topic was
+        if queued_topic:
+            commit_queue_update()
 
         # Samenvatting
         log.info("")
