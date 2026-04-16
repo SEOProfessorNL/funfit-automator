@@ -322,7 +322,7 @@ def style_blog_content(html):
         "*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}"
         "body{font-family:'Barlow',system-ui,sans-serif;background:var(--dark);color:var(--white);"
         "line-height:1.65;font-size:17px;overflow-x:hidden;-webkit-font-smoothing:antialiased}"
-        "h1,h2,h3,h4{font-family:'Barlow Condensed',sans-serif;font-weight:800;line-height:1.15;letter-spacing:.5px}"
+        "h1,h2,h3,h4{font-family:'Barlow Condensed',sans-serif;font-weight:800;line-height:1.15;letter-spacing:.5px;color:var(--white)}"
         "p{max-width:75ch}a{color:inherit;text-decoration:none}img{max-width:100%;display:block}"
         ".container{max-width:var(--container);margin:0 auto;padding:0 24px}"
         ".brand-fun{color:var(--blue)}.brand-fit{color:var(--green)}"
