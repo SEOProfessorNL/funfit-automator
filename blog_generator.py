@@ -666,7 +666,7 @@ def create_wp_post(post_data, media_id, publish_date=None):
 
     log.info(f"   ✅ Post aangemaakt (ID: {post_id})")
     log.info(f"   🔗 Link: {post_link}")
-    log.info(f"   📅 Ingepland: {date_str}")
+    log.info(f"   📅 Status: gepubliceerd")
 
     return wp_post
 
