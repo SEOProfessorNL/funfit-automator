@@ -590,15 +590,28 @@ def upload_image_to_wp(image_bytes, filename="blog-header.png"):
         "Content-Type": "image/png",
     }
 
-    response = requests.post(
-        url,
-        headers=headers,
-        data=image_bytes,
-        auth=(WP_USER, WP_APP_PASSWORD),
-        timeout=60,
-    )
-    response.raise_for_status()
-    media = response.json()
+    import time
+    max_retries = 3
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = requests.post(
+                url,
+                headers=headers,
+                data=image_bytes,
+                auth=(WP_USER, WP_APP_PASSWORD),
+                timeout=120,
+            )
+            response.raise_for_status()
+            media = response.json()
+            break
+        except (requests.exceptions.SSLError, requests.exceptions.ConnectionError) as e:
+            log.warning(f"   ⚠️  Upload poging {attempt}/{max_retries} mislukt: {e}")
+            if attempt < max_retries:
+                wait = attempt * 10
+                log.info(f"   ⏳ Wacht {wait}s voor volgende poging...")
+                time.sleep(wait)
+            else:
+                raise
 
     media_id = media["id"]
     media_url = media.get("source_url", "")
@@ -611,7 +624,7 @@ def upload_image_to_wp(image_bytes, filename="blog-header.png"):
 
 # ── Stap 4b: WordPress – Post publiceren ────────────────────────────
 def create_wp_post(post_data, media_id, publish_date=None):
-    """Maak een WordPress post aan en publiceer direct."""
+    """Maak een WordPress post aan en publiceer direct. Retry bij SSL/connectie-fouten."""
     log.info("📝 Stap 4b: WordPress post aanmaken en publiceren...")
 
     url = f"{WP_URL}/wp-json/wp/v2/posts"
@@ -625,14 +638,28 @@ def create_wp_post(post_data, media_id, publish_date=None):
     if media_id:
         payload["featured_media"] = media_id
 
-    response = requests.post(
-        url,
-        json=payload,
-        auth=(WP_USER, WP_APP_PASSWORD),
-        timeout=30,
-    )
-    response.raise_for_status()
-    wp_post = response.json()
+    import time
+    max_retries = 3
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = requests.post(
+                url,
+                json=payload,
+                auth=(WP_USER, WP_APP_PASSWORD),
+                timeout=60,
+            )
+            response.raise_for_status()
+            wp_post = response.json()
+            break
+        except (requests.exceptions.SSLError, requests.exceptions.ConnectionError, requests.exceptions.JSONDecodeError) as e:
+            log.warning(f"   ⚠️  Poging {attempt}/{max_retries} mislukt: {e}")
+            if attempt < max_retries:
+                wait = attempt * 10
+                log.info(f"   ⏳ Wacht {wait}s voor volgende poging...")
+                time.sleep(wait)
+            else:
+                log.error(f"   ❌ Alle {max_retries} pogingen mislukt")
+                raise
 
     post_id = wp_post["id"]
     post_link = wp_post.get("link", "")
