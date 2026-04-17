@@ -838,16 +838,17 @@ def main():
     log.info("🚀 Blog Automator voor funfit.nu gestart")
     log.info("=" * 60)
 
-    # Controleer environment variables
+    # Controleer environment variables (LinkedIn is optioneel)
     missing = []
     for var in ["DATAFORSEO_LOGIN", "DATAFORSEO_PASSWORD", "ANTHROPIC_API_KEY",
-                "OPENAI_API_KEY", "WP_USER", "WP_APP_PASSWORD",
-                "LINKEDIN_ACCESS_TOKEN"]:
+                "OPENAI_API_KEY", "WP_USER", "WP_APP_PASSWORD"]:
         if not os.getenv(var):
             missing.append(var)
     if missing:
         log.error(f"❌ Ontbrekende environment variabelen: {', '.join(missing)}")
         sys.exit(1)
+    if not os.getenv("LINKEDIN_ACCESS_TOKEN"):
+        log.warning("⚠️  LINKEDIN_ACCESS_TOKEN niet ingesteld — LinkedIn post wordt overgeslagen")
 
     if "--test" in sys.argv:
         log.info("🧪 Testmodus: elke API-verbinding apart testen\n")
