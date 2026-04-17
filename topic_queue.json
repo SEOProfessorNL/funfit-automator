@@ -1,62 +1,92 @@
 [
   {
-    "title_hint": "Hyrox voor beginners: alles wat je moet weten",
-    "focus_keyword": "hyrox voor beginners",
-    "seed_keywords": ["hyrox voor beginners", "hyrox wat is het", "hyrox tips beginners"],
-    "notes": "Leg alle 8 stations uit, trainingsplan voor eerste race, waarom FunFit de beste plek is (Hyrox Approved Gym)"
-  },
-  {
     "title_hint": "Wat kost een personal trainer in 2026?",
     "focus_keyword": "wat kost een personal trainer",
-    "seed_keywords": ["personal trainer kosten", "personal training tarieven", "wat kost een personal trainer"],
+    "seed_keywords": [
+      "personal trainer kosten",
+      "personal training tarieven",
+      "wat kost een personal trainer"
+    ],
     "notes": "Gemiddelde prijzen NL, waar betaal je voor, vergelijk opties (PT vs small group vs zelf), link naar FunFit tarieven"
   },
   {
     "title_hint": "De 8 Hyrox oefeningen uitgelegd (met tips)",
     "focus_keyword": "hyrox oefeningen",
-    "seed_keywords": ["hyrox oefeningen", "hyrox stations", "hyrox workout"],
+    "seed_keywords": [
+      "hyrox oefeningen",
+      "hyrox stations",
+      "hyrox workout"
+    ],
     "notes": "Elk station apart met techniek, veelgemaakte fouten, en tips. FunFit heeft alle stations als Hyrox Approved Gym"
   },
   {
     "title_hint": "Hoeveel keer per week sporten voor resultaat?",
     "focus_keyword": "hoeveel keer per week sporten",
-    "seed_keywords": ["hoeveel keer per week sporten", "trainingsfrequentie", "hoe vaak trainen"],
+    "seed_keywords": [
+      "hoeveel keer per week sporten",
+      "trainingsfrequentie",
+      "hoe vaak trainen"
+    ],
     "notes": "Verschil beginners vs gevorderden, overtraining, herstel. Koppel aan personal training bij FunFit"
   },
   {
     "title_hint": "Hyrox trainingsschema: 12 weken voorbereiding",
     "focus_keyword": "hyrox trainingsschema 12 weken",
-    "seed_keywords": ["hyrox trainingsschema", "hyrox schema 12 weken", "hyrox voorbereiding"],
+    "seed_keywords": [
+      "hyrox trainingsschema",
+      "hyrox schema 12 weken",
+      "hyrox voorbereiding"
+    ],
     "notes": "Week-voor-week schema, opbouw van basis naar race-ready. Pillar content voor Hyrox cluster"
   },
   {
     "title_hint": "Verschil personal training vs. zelf trainen",
     "focus_keyword": "personal training vs zelf trainen",
-    "seed_keywords": ["personal training vs zelf trainen", "voordelen personal trainer", "zelf sporten of met trainer"],
+    "seed_keywords": [
+      "personal training vs zelf trainen",
+      "voordelen personal trainer",
+      "zelf sporten of met trainer"
+    ],
     "notes": "Eerlijk vergelijken, voor wie is PT geschikt, wanneer kun je prima zelf. CTA naar FunFit PT"
   },
   {
     "title_hint": "Beste sportscholen in Lisse vergelijken (2026)",
     "focus_keyword": "beste sportschool lisse",
-    "seed_keywords": ["beste sportschool lisse", "sportschool lisse vergelijken", "sportscholen lisse"],
+    "seed_keywords": [
+      "beste sportschool lisse",
+      "sportschool lisse vergelijken",
+      "sportscholen lisse"
+    ],
     "notes": "Objectief vergelijken: FunFit, Fit&Shape, LisBox, Aarts Sport. Eerlijk maar FunFit USPs benadrukken"
   },
   {
     "title_hint": "Hyrox voeding: wat eet je voor en na de race?",
     "focus_keyword": "hyrox voeding",
-    "seed_keywords": ["hyrox voeding", "eten voor hyrox", "voeding hyrox race"],
+    "seed_keywords": [
+      "hyrox voeding",
+      "eten voor hyrox",
+      "voeding hyrox race"
+    ],
     "notes": "Voorbereiding, race day voeding, herstel. Praktische tips en voorbeeldmaaltijden"
   },
   {
     "title_hint": "5 voordelen van een personal trainer",
     "focus_keyword": "voordelen personal trainer",
-    "seed_keywords": ["voordelen personal trainer", "waarom personal trainer", "personal training voordelen"],
+    "seed_keywords": [
+      "voordelen personal trainer",
+      "waarom personal trainer",
+      "personal training voordelen"
+    ],
     "notes": "Sneller resultaat, minder blessures, motivatie, techniek, verantwoording. Met voorbeelden uit FunFit"
   },
   {
     "title_hint": "Fitness schema voor beginners (gratis gids)",
     "focus_keyword": "fitness schema beginners",
-    "seed_keywords": ["fitness schema beginners", "trainingsschema beginners", "beginners sportschool"],
+    "seed_keywords": [
+      "fitness schema beginners",
+      "trainingsschema beginners",
+      "beginners sportschool"
+    ],
     "notes": "Week 1-4 schema, opbouw, oefeningen uitgelegd. CTA: bij FunFit helpen trainers je met een schema op maat"
   }
 ]
