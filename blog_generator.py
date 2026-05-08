@@ -176,7 +176,22 @@ def fetch_trending_keywords():
 
 
 # ── Stap 2: Claude – Blogpost genereren ─────────────────────────────
-def _build_blogpost_prompt(keywords, queued_topic=None):
+def fetch_recent_post_titles(limit=15):
+    """Haal de laatst gepubliceerde post-titels op om duplicaten te voorkomen."""
+    try:
+        r = requests.get(
+            f"{WP_URL}/wp-json/wp/v2/posts?per_page={limit}&status=publish&orderby=date&order=desc",
+            auth=(WP_USER, WP_APP_PASSWORD),
+            timeout=15,
+        )
+        r.raise_for_status()
+        return [p["title"]["rendered"] for p in r.json()]
+    except Exception as e:
+        log.warning(f"   ⚠️  Kon recente titels niet ophalen: {e}")
+        return []
+
+
+def _build_blogpost_prompt(keywords, queued_topic=None, recent_titles=None):
     """Bouw de prompt voor blogpost-generatie."""
     keyword_list = ", ".join(kw["keyword"] for kw in keywords[:5])
 
@@ -195,12 +210,21 @@ SPECIFIEK ONDERWERP (heeft prioriteit boven trending keywords):
 Schrijf het artikel over dit specifieke onderwerp. Gebruik de trending keywords hieronder alleen als inspiratie voor extra context of als je ze natuurlijk kunt verwerken.
 """
 
+    recent_section = ""
+    if recent_titles:
+        titles_bullets = "\n".join(f"- {t}" for t in recent_titles)
+        recent_section = f"""
+RECENT GEPUBLICEERDE ARTIKELEN (kies een ANDER onderwerp — vermijd overlap met deze):
+{titles_bullets}
+"""
+
     return f"""Je schrijft voor funfit.nu, de website van FunFit — een sportschool in Lisse
 gericht op personal training, groepslessen, HYROX-training en een gezonde levensstijl.
 Vandaag is het {today}. Schrijf een diepgaande, waardevolle Nederlandse blogpost van MINIMAAL 1200 woorden.
 
 {topic_instruction}TRENDING KEYWORDS (kies het meest interessante onderwerp voor een sportschool-publiek):
 {keyword_list}
+{recent_section}
 
 OVER FUNFIT:
 - Sportschool in Lisse met focus op personal training en groepslessen
@@ -509,7 +533,11 @@ def generate_blogpost(keywords, queued_topic=None):
     """Genereer een Nederlandse blogpost. Probeert eerst Claude, fallback naar GPT-4o."""
     log.info("✍️  Stap 2: Blogpost genereren...")
 
-    prompt = _build_blogpost_prompt(keywords, queued_topic=queued_topic)
+    recent_titles = fetch_recent_post_titles(limit=15)
+    if recent_titles:
+        log.info(f"   📚 {len(recent_titles)} recente titels meegegeven om duplicaten te vermijden")
+
+    prompt = _build_blogpost_prompt(keywords, queued_topic=queued_topic, recent_titles=recent_titles)
 
     # Probeer Claude eerst
     try:
@@ -666,7 +694,7 @@ def create_wp_post(post_data, media_id, publish_date=None):
 
     log.info(f"   ✅ Post aangemaakt (ID: {post_id})")
     log.info(f"   🔗 Link: {post_link}")
-    log.info(f"   📅 Status: gepubliceerd")
+    log.info(f"   📅 Status: {wp_post.get('status', 'onbekend')}")
 
     return wp_post
 
