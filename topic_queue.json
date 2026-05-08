@@ -1,13 +1,13 @@
 [
   {
-    "title_hint": "Wat kost een personal trainer in 2026?",
-    "focus_keyword": "wat kost een personal trainer",
+    "title_hint": "Krachttraining voor vrouwen: mythes ontkracht",
+    "focus_keyword": "krachttraining voor vrouwen",
     "seed_keywords": [
-      "personal trainer kosten",
-      "personal training tarieven",
-      "wat kost een personal trainer"
+      "krachttraining voor vrouwen",
+      "vrouwen kracht sporten",
+      "fitness vrouwen sportschool"
     ],
-    "notes": "Gemiddelde prijzen NL, waar betaal je voor, vergelijk opties (PT vs small group vs zelf), link naar FunFit tarieven"
+    "notes": "Veelvoorkomende mythes (zoals 'krachttraining maakt je bulkerig'), wetenschappelijke feiten, voordelen voor vrouwen specifiek (botdichtheid, hormonen, mentale gezondheid), starter-oefeningen, en hoe FunFit vrouwen begeleidt. Uniek onderwerp, andere doelgroep dan andere posts."
   },
   {
     "title_hint": "De 8 Hyrox oefeningen uitgelegd (met tips)",
@@ -88,5 +88,45 @@
       "beginners sportschool"
     ],
     "notes": "Week 1-4 schema, opbouw, oefeningen uitgelegd. CTA: bij FunFit helpen trainers je met een schema op maat"
+  },
+  {
+    "title_hint": "Wat is HYROX? Alles over de fitness race in 2026",
+    "focus_keyword": "wat is hyrox",
+    "seed_keywords": [
+      "wat is hyrox",
+      "hyrox uitleg",
+      "hyrox race"
+    ],
+    "notes": "Pillar content voor het hele HYROX-cluster. Wat is HYROX, hoe werkt een race, welke divisies, hoe meld je je aan, waarom HYROX populair is. Cross-link naar hyrox-lisse pagina en de andere HYROX-blogs"
+  },
+  {
+    "title_hint": "Spierpijn voorkomen: 5 herstel-tips die werken",
+    "focus_keyword": "spierpijn voorkomen",
+    "seed_keywords": [
+      "spierpijn voorkomen",
+      "herstel na sporten",
+      "spierpijn na training"
+    ],
+    "notes": "Praktische tips: warming-up, koeldown, voeding, slaap, actief herstel. Wetenschappelijk onderbouwd. Goed voor zoekers die net beginnen of spieren overbelasten"
+  },
+  {
+    "title_hint": "Eiwitten na sporten: hoeveel en wanneer?",
+    "focus_keyword": "eiwitten na sporten",
+    "seed_keywords": [
+      "eiwitten na sporten",
+      "hoeveel eiwitten",
+      "eiwit timing"
+    ],
+    "notes": "Concrete getallen (gram per kg lichaamsgewicht), timing (anabolic window), voedingsbronnen, shakes vs eten. Praktisch voor lezers die serieus aan spieropbouw werken"
+  },
+  {
+    "title_hint": "Trainen tijdens de zomervakantie: 6 tips om in vorm te blijven",
+    "focus_keyword": "trainen op vakantie",
+    "seed_keywords": [
+      "trainen op vakantie",
+      "fit blijven vakantie",
+      "workout zonder gym"
+    ],
+    "notes": "Bodyweight oefeningen, korte HIIT-workouts, hardlopen, zwemmen, wandelen. Geschikt voor zomerseizoen — relevant in juli/augustus"
   }
 ]
